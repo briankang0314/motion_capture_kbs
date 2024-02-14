@@ -4,22 +4,27 @@ import math
 
 
 """
-Setup the trackbars for color range adjustment.
+Set up the trackbars for color range adjustment.
+This section initializes sliders to adjust color detection thresholds in a video feed.
 """
 def setup_trackbars(range_filter):
+    # Create a window named 'Trackbars' to hold our sliders.
     cv2.namedWindow("Trackbars", 0)
     
+    # For each color component (Hue, Saturation, Value), create two sliders: MIN and MAX.
+    # These sliders allow users to set the minimum and maximum values for color detection.
     for i, name in enumerate(["MIN", "MAX"]):
         for j in range(0, 3):
             cv2.createTrackbar(f"{name}_{range_filter[j]}", "Trackbars", 0, 255, lambda x: None)
 
 
 """
-Retrieve the current values of the trackbars.
+Function to read the current settings of the trackbars (sliders) for color detection.
 """
 def get_trackbar_values(range_filter):
     values = []
 
+    # Retrieve the current positions of the six sliders (MIN and MAX for Hue, Saturation, Value).
     for i, name in enumerate(["MIN", "MAX"]):
         for j in range(0, 3):
             v = cv2.getTrackbarPos(f"{name}_{range_filter[j]}", "Trackbars")
@@ -29,20 +34,22 @@ def get_trackbar_values(range_filter):
 
 
 """
-Calculate centroids of detected contours in the given mask.
+This function finds the center points (centroids) of detected colored areas in the video.
+i.e Calculate centroids of detected contours in the given mask.
 """
 def calculate_centroids(mask):
     # Find contours in the mask
+    # Detect edges and shapes (contours) in the masked image where our color is detected.
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # List to store centroids
     centroids = []
 
     for contour in contours:
-        # Calculate moments for each contour
+        # Calculate the centroid of each shape using moments (a way of summing up pixel intensities).
         M = cv2.moments(contour)
         
-        # Calculate the centroid of the contour
+        # Only calculate if the area is non-zero to avoid division by zero.
         if M["m00"] != 0:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
@@ -55,7 +62,8 @@ def calculate_centroids(mask):
 
 
 """
-Draw centroids on the frame.
+Place visual markers at each centroid in the video to show where the centers of colored areas are.
+i.e. Draw centroids on the frame.
 """
 def draw_centroids(frame, centroids):
     for (cX, cY) in centroids:
@@ -75,6 +83,7 @@ def connect_centroids(frame, centroids, connections):
     for start_idx, end_idx in connections:
         start_point = centroids[start_idx]
         end_point = centroids[end_idx]
+        # Draw a line between the specified pairs of centroids.
         cv2.line(frame, start_point, end_point, (0, 255, 0), 2)
     
     return frame
