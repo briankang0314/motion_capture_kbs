@@ -10,25 +10,33 @@ This section initializes sliders to adjust color detection thresholds in a video
 def setup_trackbars(range_filter):
     # Create a window named 'Trackbars' to hold our sliders.
     cv2.namedWindow("Trackbars", 0)
+
+    # Define max values for each component
+    max_values = {"Hue": 179, "Saturation": 255, "Value": 255}
     
-    # For each color component (Hue, Saturation, Value), create two sliders: MIN and MAX.
-    # These sliders allow users to set the minimum and maximum values for color detection.
-    for i, name in enumerate(["MIN", "MAX"]):
-        for j in range(0, 3):
-            cv2.createTrackbar(f"{name}_{range_filter[j]}", "Trackbars", 0, 255, lambda x: None)
+   # Create trackbars for four dots
+    for dot_num in range(1, 5):  # Assuming 4 dots for simplicity
+        for component in ["Hue", "Saturation", "Value"]:
+            for limit in ["Min", "Max"]:
+                trackbar_name = f"Dot{dot_num} {component} {limit}"
+                max_val = max_values[component]
+                cv2.createTrackbar(trackbar_name, "Trackbars", 0, max_val, lambda x: None)
 
 
 """
-Function to read the current settings of the trackbars (sliders) for color detection.
+Retrieve the current values of the trackbars for each colored dot.
 """
-def get_trackbar_values(range_filter):
-    values = []
+def get_trackbar_values():
+    values = {}
 
-    # Retrieve the current positions of the six sliders (MIN and MAX for Hue, Saturation, Value).
-    for i, name in enumerate(["MIN", "MAX"]):
-        for j in range(0, 3):
-            v = cv2.getTrackbarPos(f"{name}_{range_filter[j]}", "Trackbars")
-            values.append(v)
+    for dot_num in range(1, 5):  # Matching the setup for 4 dots
+        dot_values = {}
+        for component in ["Hue", "Saturation", "Value"]:
+            for limit in ["Min", "Max"]:
+                trackbar_name = f"Dot{dot_num} {component} {limit}"
+                value = cv2.getTrackbarPos(trackbar_name, "Trackbars")
+                dot_values[f"{component}{limit}"] = value
+        values[f"Dot{dot_num}"] = dot_values
 
     return values
 
